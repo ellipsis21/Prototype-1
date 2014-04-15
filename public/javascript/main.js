@@ -5,7 +5,7 @@
 
   var cur_video_blob = null;
   var fb_instance;
-  var video = null;
+  var video = null; //keeping track of last video
   $(document).ready(function(){
     connect_to_chat_firebase();
     connect_webcam();
@@ -53,15 +53,10 @@
 	
     $("#submission input").keydown(function( event ) {
       if (event.which == 13) {
-		// if (currChat != null) {
-			// currChat.ref().remove();
-			// currChat = null;
-		// }
-		
         if(has_emotions($(this).val())){
           fb_instance_stream.push({m:username+": " +$(this).val(), v:cur_video_blob, c: my_color});
         }else{
-		  if ($(this).val() == "") fb_instance_stream.push({m:username+": &#8249;video sent&#8250;", v:cur_video_blob, c: my_color});
+	  if ($(this).val() == "") fb_instance_stream.push({m:username+": &#8249;video sent&#8250;", v:cur_video_blob, c: my_color}); //send video if they just push enter
           else fb_instance_stream.push({m:username+": " +$(this).val(), c: my_color});
         }
 		
@@ -80,20 +75,20 @@
 
   // creates a message node and appends it to the conversation
   function display_msg(data){
-	if (video != null) {
-		document.getElementById("conversation").removeChild(video);
-		video = null;
-	}
-    $("#conversation").append("<div class='msg' style='color:"+data.c+"'>"+data.m+"</div>");
-    if(data.v){
+      if (video != null) { //remove last video sent upon receiving a new message
+	document.getElementById("conversation").removeChild(video);
+	video = null;
+      }
+      $("#conversation").append("<div class='msg' style='color:"+data.c+"'>"+data.m+"</div>");
+      if(data.v){
       // for video element
       video = document.createElement("video");
       video.autoplay = true;
       video.controls = false; // optional
       video.loop = true;
-      video.width = 600;
-	  video.style.display = "block";
-	  video.style.margin = "0 auto";
+      video.width = 600; //bigger video
+      video.style.display = "block"; //centering video
+      video.style.margin = "0 auto";
 
       var source = document.createElement("source");
       source.src =  URL.createObjectURL(base64_to_blob(data.v));
@@ -188,7 +183,7 @@
   // check to see if a message qualifies to be replaced with video.
   var has_emotions = function(msg){
 	var copy = msg.toLowerCase();
-    var options = ["lol",":)",":(", ":/", "haha", ":p", "rofl", ":-)", ":-(", ":o"]; //add a few more here
+    var options = ["lol",":)",":(", ":/", "haha", ":p", "rofl", ":-)", ":-(", ":o"]; //added emotions
     for(var i=0;i<options.length;i++){
       if(copy.indexOf(options[i])!= -1){
         return true;
